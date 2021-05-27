@@ -1,17 +1,24 @@
 <?php
+session_start();
 include_once("php/dbconnect.php");
+$_SESSION["session_id"] = session_id();
 
 $sqlall = "SELECT * FROM tbl_products";
 $stmt = $conn->prepare($sqlall);
 $stmt->execute();
 $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
 $rows = $stmt->fetchAll();
-$email = "visitor";
-if (isset($_GET['op'])){
-    if($_GET['op']=="visitor"){
-        //ask to login or register
+
+if (isset( $_GET['op'])){
+    $session = $_SESSION["session_id"];
+    $prodid = $_GET['prodid'];
+    //$sqlcheckpid = "SELECT * FROM tbl_carts WHERE sessionid = '$session' AND prodid = '$prodid'";
+    $sqladdtocart = "INSERT INTO tbl_carts (sessionid, prid, prqty) VALUES ('$session','$prodid','1')";
+    if ($conn->exec($sqladdtocart)) {
+        echo "<script>alert('Success')</script>";
+    }else{
+        echo "<script>alert('Failed')</script>";
     }
-    
 }
 ?>
 
@@ -29,8 +36,8 @@ if (isset($_GET['op'])){
     <div class="header">
         <a href="#default" class="logo">MyShop</a>
         <div class="header-right">
-            <a class="active" href="#home">Home</a>
-            <a href="#cart">My Cart</a>
+            <a class="active" href="index.php">Home</a>
+            <a href="php/cart.php">My Cart</a>
             <a href="#purchase">My Purcase</a>
             <a href="#contact">Contact</a>
 
@@ -60,13 +67,14 @@ if (isset($_GET['op'])){
     echo "<div class='card-row'>";
     foreach ($rows as $products) {
         $prodid = $products['prid'];
+        $qty = $products['prqty'];
         echo " <div class='card'>";
         $imgurl = "images/" . $products['picture'];
         echo "<img src='$imgurl' class='primage'>";
         echo "<h4 align='center' >" . ($products['prname']) . "</h3>";
         echo "<p align='center'> RM " . number_format($products['prprice'], 2) . "<br>";
         echo "Avail:" . ($products['prqty']) . " unit/s</p>";
-        echo "<a href='index.php?op=cart&email=$email&prodid=$prodid'><i class='fas fa-cart-plus' style='font-size:24px;color:dodgerblue'></i></a>";
+        echo "<a href='index.php?op=cart&prodid=$prodid'><i class='fas fa-cart-plus' style='font-size:24px;color:dodgerblue'></i></a>";
 
         echo "</div>";
     }
