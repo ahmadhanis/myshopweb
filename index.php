@@ -85,11 +85,11 @@ $rows = $stmt->fetchAll();
             <a class="active" href="index.php">Home</a>
             <a href="php/cart.php">My Cart</a>
             <a href="#purchase">My Purcase</a>
-            <a href="#contact">Contact</a>
+            <a href="#contact" onClick="return loadCookies()">Email</a>
 
         </div>
     </div>
-    <h2>List of Products</h2>
+    <center><h2>List of Products</h2></center>
     <div class="container-src">
         <form action="index.php" method="get">
             <div class="row">
@@ -112,6 +112,7 @@ $rows = $stmt->fetchAll();
         </form>
     </div>
     <?php
+    echo "<div class='container'>";
     echo "<div class='card-row'>";
     foreach ($rows as $products) {
         $prodid = $products['prid'];
@@ -122,9 +123,10 @@ $rows = $stmt->fetchAll();
         echo "<h4 align='center' >" . ($products['prname']) . "</h3>";
         echo "<p align='center'> RM " . number_format($products['prprice'], 2) . "<br>";
         echo "Avail:" . ($products['prqty']) . " unit/s</p>";
-        echo "<a href='index.php?op=cart&prodid=$prodid'><i class='fas fa-cart-plus'  onclick='return cartDialog()' style='font-size:24px;color:dodgerblue'></i></a>";
+        echo "<a href='index.php?op=cart&prodid=$prodid'><i class='fa fa-cart-plus'  onclick='return cartDialog()' style='font-size:24px;color:dodgerblue'></i></a>";
         echo "</div>";
     }
+    echo "</div>";
     echo "</div>";
     ?>
     <a href="php/newproduct.php" class="float">

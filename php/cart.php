@@ -7,14 +7,45 @@ if (!isset($_COOKIE['email'])) {
 } else {
     $email = $_COOKIE["email"];
     if (isset($_GET['button'])) {
-        $prid = $_GET['prid'];
-        $sqldelete = "DELETE FROM tbl_carts WHERE email='$email' AND prid = '$prid'";
-        $stmt = $conn->prepare($sqldelete);
-        if ($stmt->execute()) {
-            echo "<script> alert('Delete Success')</script>";
-            echo "<script>window.location.replace('cart.php')</script>";
-        } else {
-            echo "<script> alert('Delete Failed')</script>";
+        $op = $_GET["button"];
+        if ($op == "delete") {
+            $prid = $_GET['prid'];
+            $sqldelete = "DELETE FROM tbl_carts WHERE email='$email' AND prid = '$prid'";
+            $stmt = $conn->prepare($sqldelete);
+            if ($stmt->execute()) {
+                echo "<script> alert('Delete Success')</script>";
+                echo "<script>window.location.replace('cart.php')</script>";
+            } else {
+                echo "<script> alert('Delete Failed')</script>";
+            }
+        }
+        if ($op == "addcart") {
+            $prid = $_GET['prid'];
+            $sqlupdatecart = "UPDATE tbl_carts SET qty = qty +1 WHERE prid = '$prid' AND email = '$email'";
+            if ($conn->exec($sqlupdatecart)) {
+                echo "<script>alert('Success')</script>";
+                echo "<script> window.location.replace('cart.php')</script>";
+            } else {
+                echo "<script>alert('Failed add')</script>";
+                echo "<script> window.location.replace('cart.php')</script>";
+            }
+        }
+        if ($op == "removecart") {
+            $prid = $_GET['prid'];
+            $qty = $_GET['qty'];
+            if ($qty == 1) {
+                echo "<script>alert('Failed.')</script>";
+                echo "<script> window.location.replace('cart.php')</script>";
+            } else {
+                $sqlupdatecart = "UPDATE tbl_carts SET qty = qty - 1 WHERE prid = '$prid' AND email = '$email'";
+                if ($conn->exec($sqlupdatecart)) {
+                    echo "<script>alert('Success')</script>";
+                    echo "<script> window.location.replace('cart.php')</script>";
+                } else {
+                    echo "<script>alert('Failed remove')</script>";
+                    echo "<script> window.location.replace('cart.php')</script>";
+                }
+            }
         }
     }
     $sqlloadcart = "SELECT * FROM tbl_carts INNER JOIN tbl_products ON tbl_carts.prid = tbl_products.prid WHERE tbl_carts.email = '$email'";
@@ -43,16 +74,18 @@ if (!isset($_COOKIE['email'])) {
             <a href="../index.php">Home</a>
             <a class="active" href="cart.php">My Cart</a>
             <a href="#purchase">My Purcase</a>
-            <a href="#contact">Contact</a>
+            <a href="#contact" onClick="loadCookies()">Email</a>
 
         </div>
     </div>
-    <h2>Your Cart</h2>
+    <center><h2>Your Cart</h2></center>
     <?php
     $sumtotal = 0.0;
+    echo "<div class='container'>";
     echo "<div class='card-row'>";
     foreach ($rows as $carts) {
         $prid = $carts['prid'];
+        $qty = $carts['qty'];
         $total = 0.0;
         $total = $carts['prprice'] * $carts['qty'];
         $imgurl = "../images/" . $carts['picture'];
@@ -61,14 +94,17 @@ if (!isset($_COOKIE['email'])) {
         echo "<img src='$imgurl' class='primage'>";
         echo "<h4 align='center' >" . ($carts['prname']) . "</h3>";
         echo "<p align='center'> RM " . number_format($carts['prprice'], 2) . "/unit<br>";
-        echo "Qty " . ($carts['qty']) . "<br>";
+        echo "<table><tr><a href='cart.php?button=removecart&prid=$prid&qty=$qty'><i class='fa fa-minus' ' style='font-size:24px;color:dodgerblue'></i></a>&nbsp</tr>";
+        echo "<tr>Qty " . $qty . "</tr>";
+        echo "<tr>&nbsp<a href='cart.php?button=addcart&prid=$prid&qty=$qty'><i class='fa fa-plus' ' style='font-size:24px;color:dodgerblue'></i></a></tr></table>";
         echo "Total RM " . number_format($total, 2) . "<br>";
         echo "</div>";
         $sumtotal = $total + $sumtotal;
     }
     echo "</div>";
+    echo "</div>";
     echo "<div class='container'>
-    <h3>Total Price: RM ".number_format($sumtotal,2)."</h3>
+    <h3>Total Price: RM " . number_format($sumtotal, 2) . "</h3>
     </div>";
     ?>
 </body>

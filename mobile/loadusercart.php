@@ -1,27 +1,26 @@
 <?php
 include_once("dbconnect.php");
-$prname = $_POST['prname'];
+$email = $_POST['email'];
 
-if ($prname == "all") {
-    $sql = "SELECT * FROM tbl_products";
-} else {
-    $sql = "SELECT * FROM tbl_products WHERE prname LIKE '%$prname%'";
-}
+$sqlloadcart = "SELECT * FROM tbl_carts INNER JOIN tbl_products ON tbl_carts.prid = tbl_products.prid WHERE tbl_carts.email = '$email'";;
 
-$result = $conn->query($sql);
+$result = $conn->query($sqlloadcart);
 
 if ($result->num_rows > 0) {
-    $products["products"] = array();
+    $products['cart'] = array();
     while ($row = $result->fetch_assoc()) {
         $productlist['productId'] = $row['prid'];
         $productlist['productName'] = $row['prname'];
         $productlist['productType'] = $row['prtype'];
         $productlist['price'] = $row['prprice'];
-        $productlist['quantity'] = $row['prqty'];
+        $productlist['cartqty'] = $row['qty'];
+        $productlist['prqty'] = $row['prqty'];
         $productlist['picture'] = '/myshopweb/images/' . $row['picture'];
-        array_push($products['products'], $productlist);
+        array_push($products['cart'], $productlist);
     }
     echo json_encode($products);
 } else {
     echo "nodata";
 }
+
+?>
