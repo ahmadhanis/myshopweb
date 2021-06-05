@@ -45,6 +45,11 @@ function loadCookies() {
         return;
     }
 }
+function cookiesdialog(){
+    email = prompt("Please enter your email", "");
+    setCookies(email, 30);
+    alert('Email stored');
+}
 
 function cartDialog() {
     var r = confirm("Insert into cart?");

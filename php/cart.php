@@ -42,10 +42,48 @@ if (!isset($_COOKIE['email'])) {
                     echo "<script>alert('Success')</script>";
                     echo "<script> window.location.replace('cart.php')</script>";
                 } else {
-                    echo "<script>alert('Failed remove')</script>";
+                    echo "<script>alert('Failed')</script>";
                     echo "<script> window.location.replace('cart.php')</script>";
                 }
             }
+        }
+        if ($op == "Pay") {
+            $name = $_GET["name"];
+            $mobile = $_GET["phone"];
+            $pickup = $_GET['pickup'];
+            $amount = $_GET['price'];
+
+            $api_key = 'b47704d6-dd30-4143-a4b1-27eb88e8f906';
+            $collection_id = 'dzx30a9g';
+            $host = 'https://billplz-staging.herokuapp.com/api/v3/bills';
+
+            $data = array(
+                'collection_id' => $collection_id,
+                'email' => $email,
+                'mobile' => $mobile,
+                'name' => $name,
+                'amount' => $amount * 100, // RM20
+                'description' => 'Payment for order',
+                'callback_url' => "",
+                'redirect_url' => "http://localhost/myshopweb/php/payment_update.php?userid=$email&mobile=$mobile&amount=$amount"
+            );
+            $process = curl_init($host);
+            curl_setopt($process, CURLOPT_HEADER, 0);
+            curl_setopt($process, CURLOPT_USERPWD, $api_key . ":");
+            curl_setopt($process, CURLOPT_TIMEOUT, 30);
+            curl_setopt($process, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($process, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($process, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($process, CURLOPT_POSTFIELDS, http_build_query($data));
+
+            $return = curl_exec($process);
+            curl_close($process);
+
+            $bill = json_decode($return, true);
+
+            //echo "<pre>".print_r($bill, true)."</pre>";
+            header("Location: {$bill['url']}");
+
         }
     }
     $sqlloadcart = "SELECT * FROM tbl_carts INNER JOIN tbl_products ON tbl_carts.prid = tbl_products.prid WHERE tbl_carts.email = '$email'";
@@ -74,11 +112,13 @@ if (!isset($_COOKIE['email'])) {
             <a href="../index.php">Home</a>
             <a class="active" href="cart.php">My Cart</a>
             <a href="#purchase">My Purcase</a>
-            <a href="#contact" onClick="loadCookies()">Email</a>
+            <a href="javascript:cookiesdialog()">Email</a>
 
         </div>
     </div>
-    <center><h2>Your Cart</h2></center>
+    <center>
+        <h2>Your Cart</h2>
+    </center>
     <?php
     $sumtotal = 0.0;
     echo "<div class='container'>";
@@ -94,19 +134,64 @@ if (!isset($_COOKIE['email'])) {
         echo "<img src='$imgurl' class='primage'>";
         echo "<h4 align='center' >" . ($carts['prname']) . "</h3>";
         echo "<p align='center'> RM " . number_format($carts['prprice'], 2) . "/unit<br>";
-        echo "<table><tr><a href='cart.php?button=removecart&prid=$prid&qty=$qty'><i class='fa fa-minus' ' style='font-size:24px;color:dodgerblue'></i></a>&nbsp</tr>";
-        echo "<tr>Qty " . $qty . "</tr>";
-        echo "<tr>&nbsp<a href='cart.php?button=addcart&prid=$prid&qty=$qty'><i class='fa fa-plus' ' style='font-size:24px;color:dodgerblue'></i></a></tr></table>";
+        echo "<table class='center'><tr><td><a href='cart.php?button=removecart&prid=$prid&qty=$qty'><i class='fa fa-minus' ' style='font-size:24px;color:dodgerblue'></i></a></td>";
+        echo "<td>Qty " . $qty . "</td>";
+        echo "<td>&nbsp<a href='cart.php?button=addcart&prid=$prid&qty=$qty'><i class='fa fa-plus' ' style='font-size:24px;color:dodgerblue'></i></a></td></tr></table>";
         echo "Total RM " . number_format($total, 2) . "<br>";
         echo "</div>";
         $sumtotal = $total + $sumtotal;
     }
     echo "</div>";
     echo "</div>";
-    echo "<div class='container'>
-    <h3>Total Price: RM " . number_format($sumtotal, 2) . "</h3>
-    </div>";
+    echo "<div class='container-src'>
+    <h3>Total Price: RM " . number_format($sumtotal, 2) . "</h3></div>";
     ?>
+    <div class="container">
+        <h3>Payment Form</h3>
+        <form action="cart.php" method="get">
+            <div class="row">
+                <div class="col-25">
+                    <label for="lblemail">Your Email</label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="idemail" name="email" value="<?php echo $email ?>" disabled>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="lblname">Your Name</label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="idname" name="name" placeholder="Your Name" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-25">
+                    <label for="lphone">Phone Number</label>
+                </div>
+                <div class="col-75">
+                    <input type="text" id="idphone" name="phone" placeholder="Your phone" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-25">
+                    <label for="ltime">Pickup Time</label>
+                </div>
+                <div class="col-75">
+                    <input type="time" id="idtime" name="pickup" min="09:00" max="18:00" required>
+                </div>
+            </div>
+            <input type="hidden" id="idprice" name="price" value="<?php echo $sumtotal ?>">
+            <div class="row">
+                <div class="col-25">
+                </div>
+                <div class="col-75">
+                    <input type="submit" name="button" value="Pay">
+                </div>
+            </div>
+        </form>
+    </div>
 </body>
 
 </html>
