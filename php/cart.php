@@ -48,7 +48,7 @@ if (!isset($_COOKIE['email'])) {
             }
         }
         if ($op == "Pay") {
-            $name = $_GET["name"];
+            echo $name = $_GET["name"];
             $mobile = $_GET["phone"];
             $pickup = $_GET['pickup'];
             $amount = $_GET['price'];
@@ -64,8 +64,8 @@ if (!isset($_COOKIE['email'])) {
                 'name' => $name,
                 'amount' => $amount * 100, // RM20
                 'description' => 'Payment for order',
-                'callback_url' => "",
-                'redirect_url' => "http://localhost/myshopweb/php/payment_update.php?userid=$email&mobile=$mobile&amount=$amount"
+                'callback_url' => "https://slumberjer.com/myshopweb/index.php",
+                'redirect_url' => "https://slumberjer.com/myshopweb/php/payment_update.php?userid=$email&mobile=$mobile&amount=$amount"
             );
             $process = curl_init($host);
             curl_setopt($process, CURLOPT_HEADER, 0);
